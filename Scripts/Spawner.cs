@@ -15,9 +15,4 @@ public class Spawner : MonoBehaviour
             Instantiate(vehicle);
         }
     }
-
-    void Update()
-    {
-        
-    }
 }

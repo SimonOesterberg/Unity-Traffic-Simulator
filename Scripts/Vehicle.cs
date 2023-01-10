@@ -7,9 +7,12 @@ public class Vehicle : MonoBehaviour {
     [SerializeField]
     private float kph;
 
-    public Road_Node targetNode;
+    private Road_Node nextNode;
 
     public Road_Node currentNode;
+
+    public Road_Node endNode;
+    private Road_Node startNode;
 
     private float speed;
 
@@ -19,25 +22,33 @@ public class Vehicle : MonoBehaviour {
 
     private bool coroutineAllowed;
 
+    private List<string> pathToEndNode = new List<string>();
+
+    private int currentPathStep = 1;
+
     void Start() {
         transform.position = currentNode.transform.position;
+        startNode = currentNode;
         tParam = 0f;
         coroutineAllowed = true;
         speed = 0.25f * kph;
+
+        pathToEndNode = getPathToEndNode();
     }
 
     void Update() {
         if (coroutineAllowed) {
 
-            if (currentNode.connectedNodes.Count > 0) {
+            for (int i = 0; i < currentNode.connectedNodes.Count; i++) {
 
-                System.Random randomNumberGenerator = new System.Random();
+                Road_Node connection = currentNode.connectedNodes[i];
 
-                int randomWay = randomNumberGenerator.Next(0, currentNode.connectedNodes.Count);
-
-                targetNode = currentNode.connectedNodes[randomWay];
-
-                StartCoroutine(followRoad(currentNode.roadTypes[randomWay]));
+                if (connection.gameObject.name == pathToEndNode[currentPathStep]) {
+                    nextNode = connection;
+                    currentPathStep++;
+                    StartCoroutine(followRoad(currentNode.roadTypes[i]));
+                    break;
+                }
             }
         }
     }
@@ -50,7 +61,7 @@ public class Vehicle : MonoBehaviour {
         if (roadType == "Straight") {
 
             Vector3 p0 = currentNode.transform.position;
-            Vector3 p1 =  targetNode.transform.position;
+            Vector3 p1 =  nextNode.transform.position;
 
             roadLength = Mathf.Pow((Mathf.Pow(p1.x-p0.x, 2) + Mathf.Pow(p1.y-p0.y, 2) + Mathf.Pow(p1.z-p0.z, 2)), 0.5f);
 
@@ -72,7 +83,7 @@ public class Vehicle : MonoBehaviour {
             Transform handle = null;
 
             foreach (Transform child in currentNode.transform) {
-                if (child.gameObject.name == "Handle-" + targetNode.gameObject.name) {
+                if (child.gameObject.name == "Handle-" + nextNode.gameObject.name) {
                     handle = child;
                     break;
                 }
@@ -80,7 +91,7 @@ public class Vehicle : MonoBehaviour {
 
             Vector3 p0 = currentNode.transform.position;
             Vector3 p1 = handle.position;
-            Vector3 p2 = targetNode.transform.position;
+            Vector3 p2 = nextNode.transform.position;
 
             while (roadGizmosT < 1) {
                 roadGizmosT += Time.deltaTime * speed ;
@@ -114,8 +125,110 @@ public class Vehicle : MonoBehaviour {
 
         tParam = 0f;
 
-        currentNode = targetNode;
+        currentNode = nextNode;
 
-        coroutineAllowed = true;
+        if (currentPathStep == pathToEndNode.Count) {
+            Object.Destroy(this.gameObject);
+        } else {
+            coroutineAllowed = true;
+        }
+    }
+
+    public class LocalNode {
+        public float g = 0;
+        public float h = 0;
+        public float f = 0;
+
+        public LocalNode parent;
+        public Road_Node node;
+
+        public LocalNode(LocalNode parent, Road_Node node) {
+            this.parent = parent;
+            this.node = node;
+        }
+    }
+
+    private List<string> getPathToEndNode() {
+
+        List<string> path = new List<string>();
+
+        LocalNode localStartNode = new LocalNode(null, startNode);
+        LocalNode localEndNode   = new LocalNode(null, endNode  );
+        LocalNode currentLocalNode;
+
+        List<LocalNode> nodesToVisit = new List<LocalNode>();
+        nodesToVisit.Add(localStartNode);
+
+        List<LocalNode> visitedNodes = new List<LocalNode>();
+
+        int loops = 0;
+
+        while (nodesToVisit.Count > 0 && loops < 200) {
+
+            loops++;
+
+            currentLocalNode = nodesToVisit[0];
+
+            for (int i = 0; i < nodesToVisit.Count; i++) {
+                if (nodesToVisit[i].f < currentLocalNode.f) {
+                    currentLocalNode = nodesToVisit[i];
+                }
+            }
+
+            visitedNodes.Add(currentLocalNode);
+            nodesToVisit.Remove(currentLocalNode);
+
+            if (currentLocalNode.node.gameObject.name == localEndNode.node.gameObject.name) {
+                
+                LocalNode current = currentLocalNode;
+
+                while (current != null) {
+                    path.Add(current.node.gameObject.name);
+                    current = current.parent;
+                }
+
+                path.Reverse();
+
+                return path;
+            }
+
+            List<LocalNode> neighbours = new List<LocalNode>();
+
+            foreach (Road_Node connectedNode in currentLocalNode.node.connectedNodes) {
+                neighbours.Add(new LocalNode(currentLocalNode, connectedNode));
+            }
+
+            
+
+            foreach (LocalNode neighbour in neighbours) {
+                
+                bool hasBeenVisited = false;
+
+                foreach (LocalNode visitedNeighbour in visitedNodes) {
+                    if (neighbour == visitedNeighbour) {
+                        hasBeenVisited = true;
+                        break;
+                    }
+                }
+
+                if (!hasBeenVisited) {
+                    Vector3 p0 = neighbour.node.transform.position;
+                    Vector3 p1 = localEndNode.node.transform.position;
+
+                    neighbour.g = currentLocalNode.g + 1;
+                    neighbour.h = Mathf.Pow((Mathf.Pow(p1.x-p0.x, 2) + Mathf.Pow(p1.y-p0.y, 2) + Mathf.Pow(p1.z-p0.z, 2)), 0.5f);
+                    neighbour.f = neighbour.g + neighbour.h;
+
+                    foreach (LocalNode open_node in nodesToVisit) {
+                        if (neighbour == open_node && neighbour.g > open_node.g) {
+                            nodesToVisit.Remove(open_node);
+                        }
+                    }
+
+                    nodesToVisit.Add(neighbour);
+                }
+            }
+        }
+        return path;
     }
 }

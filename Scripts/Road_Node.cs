@@ -45,9 +45,8 @@ public class Road_Node : MonoBehaviour {
                     Vector3 handlePos = new Vector3((transform.position.x + target.transform.position.x)/2, (transform.position.y + target.transform.position.y)/2, (transform.position.z + target.transform.position.z)/2);
 
                     handle = new GameObject("Handle-" + target.gameObject.name);
-
+                    
                     handle.transform.position = handlePos;
-
                     handle.transform.parent = transform;
                 }
                 
