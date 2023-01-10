@@ -20,8 +20,7 @@ public class Vehicle : MonoBehaviour {
     private bool coroutineAllowed;
 
     void Start() {
-
-        transform.position = targetNode.transform.position;
+        transform.position = currentNode.transform.position;
         tParam = 0f;
         coroutineAllowed = true;
         speed = 0.25f * kph;
@@ -29,27 +28,26 @@ public class Vehicle : MonoBehaviour {
 
     void Update() {
         if (coroutineAllowed) {
-            currentNode = targetNode;
 
-            if (targetNode.connectedNodes.Count > 0) {
+            if (currentNode.connectedNodes.Count > 0) {
 
                 System.Random randomNumberGenerator = new System.Random();
 
-                int randomWay = randomNumberGenerator.Next(0, targetNode.connectedNodes.Count);
+                int randomWay = randomNumberGenerator.Next(0, currentNode.connectedNodes.Count);
 
-                targetNode = targetNode.connectedNodes[randomWay];
+                targetNode = currentNode.connectedNodes[randomWay];
 
-                StartCoroutine(followRoad(randomWay));
+                StartCoroutine(followRoad(currentNode.roadTypes[randomWay]));
             }
         }
     }
 
-    private IEnumerator followRoad(int connectionNr) {
+    private IEnumerator followRoad(string roadType) {
 
         coroutineAllowed = false;
         float roadLength = 0;
 
-        if (targetNode.roadTypes[connectionNr] == "Straight") {
+        if (roadType == "Straight") {
 
             Vector3 p0 = currentNode.transform.position;
             Vector3 p1 =  targetNode.transform.position;
@@ -66,15 +64,15 @@ public class Vehicle : MonoBehaviour {
                 yield return new WaitForEndOfFrame();
             }
 
-        } else if (targetNode.roadTypes[connectionNr]  == "Curved") {
+        } else if (roadType  == "Curved") {
 
             float roadGizmosT = 0f;
             List<Vector3> roadGizmos = new List<Vector3>();
 
             Transform handle = null;
 
-            foreach (Transform child in targetNode.transform) {
-                if (child.gameObject.name == "Handle-" + currentNode.gameObject.name) {
+            foreach (Transform child in currentNode.transform) {
+                if (child.gameObject.name == "Handle-" + targetNode.gameObject.name) {
                     handle = child;
                     break;
                 }
@@ -115,6 +113,8 @@ public class Vehicle : MonoBehaviour {
         }
 
         tParam = 0f;
+
+        currentNode = targetNode;
 
         coroutineAllowed = true;
     }

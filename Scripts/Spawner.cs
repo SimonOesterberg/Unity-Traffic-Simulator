@@ -11,7 +11,7 @@ public class Spawner : MonoBehaviour
     void Start()
     {
         foreach (Vehicle vehicle in vehicles) {
-            vehicle.targetNode = (Road_Node)transform.parent.gameObject.GetComponent("Road_Node");
+            vehicle.currentNode = (Road_Node)transform.parent.gameObject.GetComponent("Road_Node");
             Instantiate(vehicle);
         }
     }
