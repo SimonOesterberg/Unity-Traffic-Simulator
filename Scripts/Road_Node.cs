@@ -4,11 +4,9 @@ using UnityEngine;
 
 public class Road_Node : MonoBehaviour {
 
-    [SerializeField]
     public List<Road_Node> connectedNodes = new List<Road_Node>();
 
-    [SerializeField]
-    public string roadType;
+    public List<string> roadTypes = new List<string>();
 
     private void OnDrawGizmos() {
 
@@ -16,10 +14,10 @@ public class Road_Node : MonoBehaviour {
 
             Road_Node target = connectedNodes[i];
 
-            if (target.roadType == "Straight") {
+            if (roadTypes[i] == "Straight") {
 
-                foreach (Transform child in target.transform) {
-                    if (child.gameObject.name == "Handle-" + transform.gameObject.name) {
+                foreach (Transform child in transform) {
+                    if (child.gameObject.name == "Handle-" + target.gameObject.name) {
                         DestroyImmediate(child.gameObject);
                         break;
                     }
@@ -27,7 +25,7 @@ public class Road_Node : MonoBehaviour {
 
                 Gizmos.DrawLine(transform.position, target.transform.position);
 
-            } else if (target.roadType == "Curved") {
+            } else if (roadTypes[i] == "Curved") {
 
                 Vector3 gizmosPosition;
                 Vector3 lastGizmosPosition = new Vector3(0, 0 ,0);
@@ -35,8 +33,8 @@ public class Road_Node : MonoBehaviour {
 
                 bool handleSpawned = false;
 
-                foreach (Transform child in target.transform) {
-                    if (child.gameObject.name == "Handle-" + transform.gameObject.name) {
+                foreach (Transform child in transform) {
+                    if (child.gameObject.name == "Handle-" + target.gameObject.name) {
                         handleSpawned = true;
                         handle = child.gameObject;
                         break;
@@ -46,18 +44,18 @@ public class Road_Node : MonoBehaviour {
                 if (!handleSpawned) {
                     Vector3 handlePos = new Vector3((transform.position.x + target.transform.position.x)/2, (transform.position.y + target.transform.position.y)/2, (transform.position.z + target.transform.position.z)/2);
 
-                    handle = new GameObject("Handle-" + transform.gameObject.name);
+                    handle = new GameObject("Handle-" + target.gameObject.name);
 
                     handle.transform.position = handlePos;
 
-                    handle.transform.parent = target.transform;
+                    handle.transform.parent = transform;
                 }
                 
                 for (float t = 0; t <= 1; t += 0.05f) {
 
                     gizmosPosition = handle.transform.position + 
-                                     Mathf.Pow(1 - t, 2) * (transform.position - handle.transform.position) +
-                                     Mathf.Pow(t, 2) * (target.transform.position - handle.transform.position);
+                                    Mathf.Pow(1 - t, 2) * (transform.position - handle.transform.position) +
+                                    Mathf.Pow(t, 2) * (target.transform.position - handle.transform.position);
                     
                     if (t != 0) {
                         Gizmos.DrawLine(lastGizmosPosition, gizmosPosition);

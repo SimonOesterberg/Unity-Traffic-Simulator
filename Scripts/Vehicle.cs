@@ -39,17 +39,17 @@ public class Vehicle : MonoBehaviour {
 
                 targetNode = targetNode.connectedNodes[randomWay];
 
-                StartCoroutine(followRoad());
+                StartCoroutine(followRoad(randomWay));
             }
         }
     }
 
-    private IEnumerator followRoad() {
+    private IEnumerator followRoad(int connectionNr) {
 
         coroutineAllowed = false;
         float roadLength = 0;
 
-        if (targetNode.roadType == "Straight") {
+        if (targetNode.roadTypes[connectionNr] == "Straight") {
 
             Vector3 p0 = currentNode.transform.position;
             Vector3 p1 =  targetNode.transform.position;
@@ -66,7 +66,7 @@ public class Vehicle : MonoBehaviour {
                 yield return new WaitForEndOfFrame();
             }
 
-        } else if (targetNode.roadType == "Curved") {
+        } else if (targetNode.roadTypes[connectionNr]  == "Curved") {
 
             float roadGizmosT = 0f;
             List<Vector3> roadGizmos = new List<Vector3>();
