@@ -7,12 +7,22 @@ public class Spawner : MonoBehaviour
     [SerializeField]
     private List<Vehicle> vehicles;
 
+    private int vehicleNumberToSpawn = 0;
 
-    void Start()
-    {
-        foreach (Vehicle vehicle in vehicles) {
-            vehicle.currentNode = (Road_Node)transform.parent.gameObject.GetComponent("Road_Node");
-            Instantiate(vehicle);
+
+    void Start() {
+         InvokeRepeating("spawnVehicle", 0, 1.0f);
+    }
+
+    void spawnVehicle() {
+        if (vehicleNumberToSpawn < vehicles.Count) {
+
+            vehicles[vehicleNumberToSpawn].currentNode = (Road_Node)transform.parent.gameObject.GetComponent("Road_Node");
+            
+            //Instantiate(vehicles[vehicleNumberToSpawn]);
+
+            vehicleNumberToSpawn++;
+        
         }
     }
 }
