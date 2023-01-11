@@ -38,7 +38,7 @@ public class Vehicle : MonoBehaviour {
     void Update() {
 
         if (kph < targetKph) {
-            kph += 5 * Time.deltaTime;
+            kph += 10 * Time.deltaTime;
             speed = 0.25f * kph;
         } else if (kph > targetKph) {
             kph -= 50 * Time.deltaTime;
