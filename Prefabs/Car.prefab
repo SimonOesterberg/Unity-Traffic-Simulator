@@ -16,12 +16,28 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 28989946308479538, guid: 169165785a8c5b14c96b84e401040a19, type: 3}
+      propertyPath: maxSpeed
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 28989946308479538, guid: 169165785a8c5b14c96b84e401040a19, type: 3}
       propertyPath: startNode
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 28989946308479538, guid: 169165785a8c5b14c96b84e401040a19, type: 3}
       propertyPath: targetKph
       value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 28989946308479538, guid: 169165785a8c5b14c96b84e401040a19, type: 3}
+      propertyPath: targetSpeed
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 28989946308479538, guid: 169165785a8c5b14c96b84e401040a19, type: 3}
+      propertyPath: acceleration
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 28989946308479538, guid: 169165785a8c5b14c96b84e401040a19, type: 3}
+      propertyPath: deceleration
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 161503926753619544, guid: 169165785a8c5b14c96b84e401040a19, type: 3}
       propertyPath: m_RootOrder

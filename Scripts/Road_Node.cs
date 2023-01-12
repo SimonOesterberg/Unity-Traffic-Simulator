@@ -4,7 +4,13 @@ using UnityEngine;
 
 public class Road_Node : MonoBehaviour {
 
+    public float speedLimit = 100;
+    public int priority = 0;
+
     public List<Road_Node> connectedNodes = new List<Road_Node>();
+
+    [System.NonSerialized] public List<Vehicle> vehiclesOn = new List<Vehicle>();
+    [System.NonSerialized] public List<Vehicle> vehiclesOnTheirWay = new List<Vehicle>();
 
     public List<string> roadTypes = new List<string>();
 

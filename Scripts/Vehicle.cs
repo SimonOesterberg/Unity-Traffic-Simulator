@@ -1,20 +1,25 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System;
 using UnityEngine;
 
 public class Vehicle : MonoBehaviour {
-    
-    [System.NonSerialized] public float kph = 0;
 
     private Road_Node nextNode;
-
     private Road_Node currentNode;
-
     public Road_Node endNode;
     public Road_Node startNode;
 
-    private float speed;
-    public float targetKph;
+    private float minimumDistanceToNextVehicle = 3f;
+
+    private float speed = 0;
+    private float targetSpeed;
+
+
+    public float maxSpeed = 50;
+    public float acceleration = 5;
+    public float deceleration = 5;
 
     private float tParam;
 
@@ -26,39 +31,108 @@ public class Vehicle : MonoBehaviour {
 
     private int currentPathStep = 1;
 
+    private Vision vision;
+
+    private float changeSpeed () {
+
+        float localSpeed = speed;
+
+        if (speed < targetSpeed * 0.25 && speed < maxSpeed * 0.25) {
+            localSpeed += (2 * acceleration) * Time.deltaTime;
+        } else if (speed > targetSpeed * 0.25) {
+            if (localSpeed - (10 * deceleration) * Time.deltaTime < 0) {
+                localSpeed = 0;
+            } else {
+                localSpeed -= (10 * deceleration) * Time.deltaTime;
+            }
+        }
+
+        return localSpeed;
+    }
+
     void Start() {
+        vision = gameObject.GetComponent(typeof(Vision)) as Vision;
         transform.position = startNode.transform.position;
         currentNode = startNode;
         tParam = 0f;
         coroutineAllowed = true;
 
         pathToEndNode = Pathfinder.getPath(startNode, endNode);
+        targetSpeed = currentNode.speedLimit;
+        speed = changeSpeed();
     }
 
     void Update() {
 
-        if (kph < targetKph) {
-            kph += 10 * Time.deltaTime;
-            speed = 0.25f * kph;
-        } else if (kph > targetKph) {
-            kph -= 50 * Time.deltaTime;
-            speed = 0.25f * kph;
-        }
-
         if (coroutineAllowed) {
+
+            currentNode.vehiclesOn.Add(this);
 
             for (int i = 0; i < currentNode.connectedNodes.Count; i++) {
 
                 Road_Node connection = currentNode.connectedNodes[i];
 
                 if (connection.gameObject.name == pathToEndNode[currentPathStep]) {
+
+                    if (nextNode != null) {
+                        nextNode.vehiclesOnTheirWay.Remove(this);
+                    }
+
                     nextNode = connection;
+                    nextNode.vehiclesOnTheirWay.Add(this);
                     currentPathStep++;
+
+
                     StartCoroutine(followRoad(currentNode.roadTypes[i]));
                     break;
                 }
             }
         }
+
+        Vehicle vehicleInFront = null;
+        Vehicle siblingVehicle = null;
+
+        if (currentNode.vehiclesOn[0] != this) {
+            for (int j = 0; j < currentNode.vehiclesOn.Count; j++) {
+                if (currentNode.vehiclesOn[j] == this) {
+                    vehicleInFront = currentNode.vehiclesOn[j - 1];
+                }
+            }
+        } else if (nextNode.vehiclesOn.Count > 0) {
+            vehicleInFront = nextNode.vehiclesOn.Last();
+        }
+
+        if (nextNode.vehiclesOnTheirWay.Count > 1) {
+            for (int j = 0; j < nextNode.vehiclesOnTheirWay.Count; j++) {
+                if (nextNode.vehiclesOnTheirWay[j] != this) {
+                    siblingVehicle = nextNode.vehiclesOnTheirWay[j];
+                    break;
+                }
+            }
+        }
+
+        targetSpeed = currentNode.speedLimit;
+
+        if (vehicleInFront != null || siblingVehicle != null) {
+
+            if (vehicleInFront != null && vision.isSeeing(vehicleInFront.gameObject.GetComponent<Collider>()) && vehicleInFront.speed < speed && Vector3.Distance(transform.position, vehicleInFront.transform.position) < minimumDistanceToNextVehicle) {
+                targetSpeed = vehicleInFront.speed;
+            } 
+            
+            if (siblingVehicle != null ) {
+                if (siblingVehicle.currentNode.priority > currentNode.priority) {
+                        targetSpeed = Vector3.Distance(transform.position, nextNode.transform.position) * 5;
+
+                        if (targetSpeed > currentNode.speedLimit) {
+                            targetSpeed = currentNode.speedLimit;
+                        }
+                }
+            }
+
+
+        }
+
+        speed = changeSpeed();
     }
 
     private IEnumerator followRoad(string roadType) {
@@ -133,10 +207,12 @@ public class Vehicle : MonoBehaviour {
 
         tParam = 0f;
 
+        currentNode.vehiclesOn.Remove(this);
         currentNode = nextNode;
+        
 
         if (currentPathStep == pathToEndNode.Count) {
-            Object.Destroy(this.gameObject);
+            Destroy(this.gameObject);
         } else {
             coroutineAllowed = true;
         }

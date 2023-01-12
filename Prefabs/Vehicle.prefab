@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 161503926753619546}
   - component: {fileID: 28989946308479538}
   - component: {fileID: 1894119688585342119}
-  - component: {fileID: -5477988012090454694}
+  - component: {fileID: 5103185173515302097}
   m_Layer: 0
   m_Name: Vehicle
   m_TagString: Vehicle
@@ -29,8 +29,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 161503926753619548}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.0443106, y: 0.15555918, z: 17.310453}
-  m_LocalScale: {x: 0.30444932, y: 0.31111836, z: 0.52404773}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.8, y: 1.5, z: 4.3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -100,7 +100,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   endNode: {fileID: 0}
   startNode: {fileID: 0}
-  targetKph: 20
+  maxSpeed: 50
+  acceleration: 5
+  deceleration: 5
 --- !u!65 &1894119688585342119
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -114,7 +116,7 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &-5477988012090454694
+--- !u!114 &5103185173515302097
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -123,6 +125,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 161503926753619548}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 332c147e145132b408e59329a1a8dcd9, type: 3}
+  m_Script: {fileID: 11500000, guid: 1bfffc52ef8d61c45a9378e59e2caff0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  visionRange: 10
