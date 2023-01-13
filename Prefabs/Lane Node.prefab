@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6559625580698540936}
   - component: {fileID: 6559625580698540937}
   m_Layer: 0
-  m_Name: Road Node
+  m_Name: Lane Node
   m_TagString: Untagged
   m_Icon: {fileID: 3306451490063965843, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -25,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6559625580698540942}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.32, y: -1.6927032, z: 6.334426}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -44,5 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e222d31234f515d4ba16df3f65e3a905, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  connectedNodes: []
-  roadType: Straight
+  speedLimit: 100
+  priority: 0
+  laneHandle: {fileID: 7935208767732690956, guid: 031fe7d34cc628b429bc74de65e02db8, type: 3}
+  connectedLaneNodes: []
+  laneTypes: []

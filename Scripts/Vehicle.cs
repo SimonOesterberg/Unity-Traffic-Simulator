@@ -6,12 +6,14 @@ using UnityEngine;
 
 public class Vehicle : MonoBehaviour {
 
-    private Road_Node nextNode;
-    private Road_Node currentNode;
-    public Road_Node endNode;
-    public Road_Node startNode;
+    private LaneNode nextNode;
+    private LaneNode currentNode;
+    public LaneNode endNode;
+    public LaneNode startNode;
 
     private float minimumDistanceToNextVehicle = 10f;
+
+    private float safeMergeDistance = 8.5f;
     
     private float speed = 0;
     private float targetSpeed;
@@ -70,9 +72,9 @@ public class Vehicle : MonoBehaviour {
 
             currentNode.vehiclesOn.Add(this);
 
-            for (int i = 0; i < currentNode.connectedNodes.Count; i++) {
+            for (int i = 0; i < currentNode.connectedLaneNodes.Count; i++) {
 
-                Road_Node connection = currentNode.connectedNodes[i];
+                LaneNode connection = currentNode.connectedLaneNodes[i];
 
                 if (connection.gameObject.name == pathToEndNode[currentPathStep]) {
 
@@ -85,7 +87,7 @@ public class Vehicle : MonoBehaviour {
                     currentPathStep++;
 
 
-                    StartCoroutine(followRoad(currentNode.roadTypes[i]));
+                    StartCoroutine(followRoad(currentNode.laneTypes[i]));
                     break;
                 }
             }
@@ -121,10 +123,9 @@ public class Vehicle : MonoBehaviour {
                 targetSpeed = vehicleInFront.speed;
             } 
             
-            if (siblingVehicle != null && vision.isSeeing(siblingVehicle.gameObject.GetComponent<Collider>()) && siblingVehicle.currentNode.priority > currentNode.priority && Math.Abs(siblingVehicle.leftUntilNextNode - leftUntilNextNode) >= minimumDistanceToNextVehicle ) {
+            if (siblingVehicle != null && vision.isSeeing(siblingVehicle.gameObject.GetComponent<Collider>()) && siblingVehicle.currentNode.priority >= currentNode.priority && Math.Abs(siblingVehicle.leftUntilNextNode - leftUntilNextNode) >= safeMergeDistance) {
 
-                print("Slowing down!");
-                targetSpeed = Vector3.Distance(transform.position, nextNode.transform.position) * 5;
+                targetSpeed = Vector3.Distance(transform.position, nextNode.transform.position);
 
                 if (targetSpeed > currentNode.speedLimit) {
                     targetSpeed = currentNode.speedLimit;
@@ -137,22 +138,22 @@ public class Vehicle : MonoBehaviour {
         speed = changeSpeed();
     }
 
-    private IEnumerator followRoad(string roadType) {
+    private IEnumerator followRoad(string laneType) {
 
         coroutineAllowed = false;
-        float roadLength = 0;
+        float laneLength = 0;
 
-        if (roadType == "Straight") {
+        if (laneType == "Straight") {
 
             Vector3 p0 = currentNode.transform.position;
             Vector3 p1 =  nextNode.transform.position;
 
-            roadLength = Vector3.Distance(p0, p1);
+            laneLength = Vector3.Distance(p0, p1);
 
             while (tParam < 1) {
-                tParam += Time.deltaTime * (speed / roadLength);
+                tParam += Time.deltaTime * (speed / laneLength);
 
-                leftUntilNextNode = roadLength / speed;
+                leftUntilNextNode = laneLength / speed;
                 Vector3 vehiclePosition = p0 + tParam * (p1 - p0);
 
                 transform.LookAt(vehiclePosition);
@@ -160,45 +161,45 @@ public class Vehicle : MonoBehaviour {
                 yield return new WaitForEndOfFrame();
             }
 
-        } else if (roadType  == "Curved") {
+        } else if (laneType  == "Curved") {
 
-            float roadGizmosT = 0f;
-            List<Vector3> roadGizmos = new List<Vector3>();
+            float laneGizmosT = 0f;
+            List<Vector3> laneGizmos = new List<Vector3>();
 
-            Transform handle = null;
+            Transform laneHandleTF = null;
 
             foreach (Transform child in currentNode.transform) {
-                if (child.gameObject.name == "Handle-" + nextNode.gameObject.name) {
-                    handle = child;
+                if (child.gameObject.name == "Lane Handle to " + nextNode.gameObject.name) {
+                    laneHandleTF = child;
                     break;
                 }
             }
 
             Vector3 p0 = currentNode.transform.position;
-            Vector3 p1 = handle.position;
+            Vector3 p1 = laneHandleTF.position;
             Vector3 p2 = nextNode.transform.position;
 
-            while (roadGizmosT < 1) {
-                roadGizmosT += Time.deltaTime * speed ;
+            while (laneGizmosT < 1) {
+                laneGizmosT += Time.deltaTime * speed ;
 
-                roadGizmos.Add(p1 + 
-                               Mathf.Pow(1 - roadGizmosT, 2) * (p0 - p1) +
-                               Mathf.Pow(roadGizmosT, 2) * (p2 - p1)
+                laneGizmos.Add(p1 + 
+                               Mathf.Pow(1 - laneGizmosT, 2) * (p0 - p1) +
+                               Mathf.Pow(laneGizmosT, 2) * (p2 - p1)
                               );
             }
 
-            for (int i = 0; i < roadGizmos.Count - 1; i++) {
+            for (int i = 0; i < laneGizmos.Count - 1; i++) {
 
-                Vector3 g0 = roadGizmos[i];
-                Vector3 g1 = roadGizmos[i + 1];
+                Vector3 g0 = laneGizmos[i];
+                Vector3 g1 = laneGizmos[i + 1];
 
-                roadLength += Vector3.Distance(g0, g1);
+                laneLength += Vector3.Distance(g0, g1);
             }
 
             while (tParam < 1) {
-                tParam += Time.deltaTime * (speed / roadLength);
+                tParam += Time.deltaTime * (speed / laneLength);
 
-                leftUntilNextNode = roadLength / speed;
+                leftUntilNextNode = laneLength / speed;
 
                 vehiclePosition = p1 + 
                                   Mathf.Pow(1 - tParam, 2) * (p0 - p1) +

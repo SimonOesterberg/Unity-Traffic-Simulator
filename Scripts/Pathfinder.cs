@@ -10,15 +10,15 @@ public class Pathfinder : MonoBehaviour {
         public float f = 0;
 
         public LocalNode parent;
-        public Road_Node node;
+        public LaneNode node;
 
-        public LocalNode(LocalNode parent, Road_Node node) {
+        public LocalNode(LocalNode parent, LaneNode node) {
             this.parent = parent;
             this.node = node;
         }
     }
 
-    public static List<string> getPath(Road_Node startNode, Road_Node endNode) {
+    public static List<string> getPath(LaneNode startNode, LaneNode endNode) {
 
         List<string> path = new List<string>();
 
@@ -64,7 +64,7 @@ public class Pathfinder : MonoBehaviour {
 
             List<LocalNode> neighbours = new List<LocalNode>();
 
-            foreach (Road_Node connectedNode in currentLocalNode.node.connectedNodes) {
+            foreach (LaneNode connectedNode in currentLocalNode.node.connectedLaneNodes) {
                 neighbours.Add(new LocalNode(currentLocalNode, connectedNode));
             }
 

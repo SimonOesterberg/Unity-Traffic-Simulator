@@ -1,26 +1,29 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
-public class Road_Node : MonoBehaviour {
+public class LaneNode : MonoBehaviour {
 
     public float speedLimit = 100;
     public int priority = 0;
 
-    public List<Road_Node> connectedNodes = new List<Road_Node>();
+    [SerializeField] private GameObject laneHandle;
+
+    public List<LaneNode> connectedLaneNodes = new List<LaneNode>();
 
     [System.NonSerialized] public List<Vehicle> vehiclesOn = new List<Vehicle>();
     [System.NonSerialized] public List<Vehicle> vehiclesOnTheirWay = new List<Vehicle>();
 
-    public List<string> roadTypes = new List<string>();
+    public List<string> laneTypes = new List<string>();
 
     private void OnDrawGizmos() {
 
-        for (int i = 0; i < connectedNodes.Count; i++) {
+        for (int i = 0; i < connectedLaneNodes.Count; i++) {
 
-            Road_Node target = connectedNodes[i];
+            LaneNode target = connectedLaneNodes[i];
 
-            if (roadTypes[i] == "Straight") {
+            if (laneTypes[i] == "Straight") {
 
                 foreach (Transform child in transform) {
                     if (child.gameObject.name == "Handle-" + target.gameObject.name) {
@@ -31,18 +34,18 @@ public class Road_Node : MonoBehaviour {
 
                 Gizmos.DrawLine(transform.position, target.transform.position);
 
-            } else if (roadTypes[i] == "Curved") {
+            } else if (laneTypes[i] == "Curved") {
 
                 Vector3 gizmosPosition;
                 Vector3 lastGizmosPosition = new Vector3(0, 0 ,0);
-                GameObject handle = null;
+                GameObject handleGO = null;
 
                 bool handleSpawned = false;
 
                 foreach (Transform child in transform) {
-                    if (child.gameObject.name == "Handle-" + target.gameObject.name) {
+                    if (child.gameObject.name == "Lane Handle to " + target.gameObject.name) {
                         handleSpawned = true;
-                        handle = child.gameObject;
+                        handleGO = child.gameObject;
                         break;
                     }
                 }
@@ -50,17 +53,16 @@ public class Road_Node : MonoBehaviour {
                 if (!handleSpawned) {
                     Vector3 handlePos = new Vector3((transform.position.x + target.transform.position.x)/2, (transform.position.y + target.transform.position.y)/2, (transform.position.z + target.transform.position.z)/2);
 
-                    handle = new GameObject("Handle-" + target.gameObject.name);
-                    
-                    handle.transform.position = handlePos;
-                    handle.transform.parent = transform;
+                    handleGO = Instantiate(laneHandle, handlePos, Quaternion.identity, transform);
+
+                    handleGO.name = "Lane Handle to " + target.gameObject.name;
                 }
                 
                 for (float t = 0; t <= 1; t += 0.05f) {
 
-                    gizmosPosition = handle.transform.position + 
-                                    Mathf.Pow(1 - t, 2) * (transform.position - handle.transform.position) +
-                                    Mathf.Pow(t, 2) * (target.transform.position - handle.transform.position);
+                    gizmosPosition = handleGO.transform.position + 
+                                    Mathf.Pow(1 - t, 2) * (transform.position - handleGO.transform.position) +
+                                    Mathf.Pow(t, 2) * (target.transform.position - handleGO.transform.position);
                     
                     if (t != 0) {
                         Gizmos.DrawLine(lastGizmosPosition, gizmosPosition);
@@ -68,6 +70,9 @@ public class Road_Node : MonoBehaviour {
 
                     lastGizmosPosition = gizmosPosition;
                 }
+
+                Handles.DrawDottedLine(transform.position, handleGO.transform.position, 4.0f);
+                Handles.DrawDottedLine(target.transform.position, handleGO.transform.position, 4.0f);
             }
         }
     }

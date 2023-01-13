@@ -5,7 +5,7 @@ using UnityEngine;
 public class Spawner : MonoBehaviour
 {
     [SerializeField] private List<Vehicle> vehicles;
-    [SerializeField] private List<Road_Node> targets;
+    [SerializeField] private List<LaneNode> targets;
 
     private int vehicleNumberToSpawn = 0;
 
@@ -17,7 +17,7 @@ public class Spawner : MonoBehaviour
     void spawnVehicle() {
         if (vehicleNumberToSpawn < vehicles.Count) {
 
-            vehicles[vehicleNumberToSpawn].startNode = (Road_Node)transform.parent.gameObject.GetComponent("Road_Node");
+            vehicles[vehicleNumberToSpawn].startNode = (LaneNode)transform.parent.gameObject.GetComponent("LaneNode");
             vehicles[vehicleNumberToSpawn].endNode = targets[vehicleNumberToSpawn];
             
             Instantiate(vehicles[vehicleNumberToSpawn]);
