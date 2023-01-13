@@ -44,8 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e222d31234f515d4ba16df3f65e3a905, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  laneHandlePrefab: {fileID: 7935208767732690956, guid: 031fe7d34cc628b429bc74de65e02db8, type: 3}
   speedLimit: 100
   priority: 0
-  laneHandle: {fileID: 7935208767732690956, guid: 031fe7d34cc628b429bc74de65e02db8, type: 3}
   connectedLaneNodes: []
   laneTypes: []

@@ -18,7 +18,7 @@ public class Vehicle : MonoBehaviour {
     private float speed = 0;
     private float targetSpeed;
 
-
+    // Used to give each vehicle thir own max
     public float maxSpeed = 50;
     public float acceleration = 5;
     public float deceleration = 5;
