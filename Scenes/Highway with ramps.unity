@@ -1748,7 +1748,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6559625580698540937, guid: 1347662be504b174f9d6bd36898fcda1, type: 3}
       propertyPath: speedLimit
-      value: 25
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 6559625580698540937, guid: 1347662be504b174f9d6bd36898fcda1, type: 3}
       propertyPath: roadTypes.Array.size

@@ -128,4 +128,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bfffc52ef8d61c45a9378e59e2caff0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visionRange: 10
+  visionRange: 100

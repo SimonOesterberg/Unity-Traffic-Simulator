@@ -11,8 +11,8 @@ public class Vehicle : MonoBehaviour {
     public Road_Node endNode;
     public Road_Node startNode;
 
-    private float minimumDistanceToNextVehicle = 3f;
-
+    private float minimumDistanceToNextVehicle = 10f;
+    
     private float speed = 0;
     private float targetSpeed;
 
@@ -20,6 +20,8 @@ public class Vehicle : MonoBehaviour {
     public float maxSpeed = 50;
     public float acceleration = 5;
     public float deceleration = 5;
+
+    public float leftUntilNextNode;
 
     private float tParam;
 
@@ -119,13 +121,13 @@ public class Vehicle : MonoBehaviour {
                 targetSpeed = vehicleInFront.speed;
             } 
             
-            if (siblingVehicle != null ) {
-                if (siblingVehicle.currentNode.priority > currentNode.priority) {
-                        targetSpeed = Vector3.Distance(transform.position, nextNode.transform.position) * 5;
+            if (siblingVehicle != null && vision.isSeeing(siblingVehicle.gameObject.GetComponent<Collider>()) && siblingVehicle.currentNode.priority > currentNode.priority && Math.Abs(siblingVehicle.leftUntilNextNode - leftUntilNextNode) >= minimumDistanceToNextVehicle ) {
 
-                        if (targetSpeed > currentNode.speedLimit) {
-                            targetSpeed = currentNode.speedLimit;
-                        }
+                print("Slowing down!");
+                targetSpeed = Vector3.Distance(transform.position, nextNode.transform.position) * 5;
+
+                if (targetSpeed > currentNode.speedLimit) {
+                    targetSpeed = currentNode.speedLimit;
                 }
             }
 
@@ -150,6 +152,7 @@ public class Vehicle : MonoBehaviour {
             while (tParam < 1) {
                 tParam += Time.deltaTime * (speed / roadLength);
 
+                leftUntilNextNode = roadLength / speed;
                 Vector3 vehiclePosition = p0 + tParam * (p1 - p0);
 
                 transform.LookAt(vehiclePosition);
@@ -194,6 +197,8 @@ public class Vehicle : MonoBehaviour {
 
             while (tParam < 1) {
                 tParam += Time.deltaTime * (speed / roadLength);
+
+                leftUntilNextNode = roadLength / speed;
 
                 vehiclePosition = p1 + 
                                   Mathf.Pow(1 - tParam, 2) * (p0 - p1) +

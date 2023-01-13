@@ -8,7 +8,9 @@ public class Vision : MonoBehaviour {
 
     private List<Collider> collidersInSight = new List<Collider>();
 
-    public int visionRange = 1000;
+    public int visionRange = 20;
+
+    private List<Ray> visionRays = new List<Ray>();
 
     public bool isSeeing(Collider target) {
         lookAround();
@@ -26,20 +28,33 @@ public class Vision : MonoBehaviour {
     void lookAround() {
         collidersInSight.Clear();
 
-        Ray rayForward = new Ray(transform.position, transform.forward);
-        Ray rayForwardL = new Ray(transform.position, Quaternion.Euler(0, 5.0f, 0) * transform.forward);
-        Ray rayForwardR = new Ray(transform.position, Quaternion.Euler(0, -5.0f, 0) * transform.forward);
+        visionRays.Clear();
+
+        visionRays.Add(new Ray(transform.position, Quaternion.Euler(0, 5.0f, 0) * transform.forward));
+        visionRays.Add(new Ray(transform.position, transform.forward));
+        visionRays.Add(new Ray(transform.position, Quaternion.Euler(0, -5.0f, 0) * transform.forward));
+
+        visionRays.Add(new Ray(transform.position, -transform.right));
+        visionRays.Add(new Ray(transform.position, transform.right));
+        
+        visionRays.Add(new Ray(transform.position, Quaternion.Euler(0, 5.0f, 0) * -transform.forward));
+        visionRays.Add(new Ray(transform.position, -transform.forward));
+        visionRays.Add(new Ray(transform.position, Quaternion.Euler(0, -5.0f, 0) * -transform.forward));
 
         RaycastHit hit;
 
-        if (Physics.Raycast(rayForward, out hit, visionRange) || Physics.Raycast(rayForwardL, out hit, visionRange) || Physics.Raycast(rayForwardR, out hit, visionRange) ) {    
-            collidersInSight.Add(hit.collider);
+        foreach (Ray visionRay in visionRays) {
+            if (Physics.Raycast(visionRay, out hit, visionRange)) {    
+                collidersInSight.Add(hit.collider);
+            }
         }
+
+        
     }
 
     void Update() {
-        Debug.DrawRay(transform.position, transform.forward * visionRange, Color.red);
-        Debug.DrawRay(transform.position, Quaternion.Euler(0, 5.0f, 0) * transform.forward * visionRange, Color.yellow);
-        Debug.DrawRay(transform.position, Quaternion.Euler(0, -5.0f, 0) * transform.forward * visionRange, Color.blue);
+        /* Debug.DrawRay(transform.position, -transform.forward * visionRange, Color.red);
+        Debug.DrawRay(transform.position, Quaternion.Euler(0, 5.0f, 0) * -transform.forward * visionRange, Color.yellow);
+        Debug.DrawRay(transform.position, Quaternion.Euler(0, -5.0f, 0) * -transform.forward * visionRange, Color.blue); */
     }
 }
