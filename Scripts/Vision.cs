@@ -7,11 +7,15 @@ public class Vision : MonoBehaviour {
     // How far the vehicle shuld be able to see
     public int visionRange = 20;
 
+
+
     // A list that will contain all colliders that the vehicle with this Vision script can see
     private List<Collider> collidersInSight = new List<Collider>();
 
     // A list that will contain all rays that will be sent out when looking
     private List<Ray> visionRays = new List<Ray>();
+
+
 
     // Function that returns true if the passes collider: target can be seen
     public bool isSeeing(Collider target) {

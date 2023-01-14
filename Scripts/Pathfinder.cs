@@ -72,7 +72,7 @@ public class Pathfinder : MonoBehaviour {
             List<PathNode> connectedPathNodes = new List<PathNode>();
 
             // Add all of the connected nodes to the connected path nodes list
-            foreach (LaneNode connectedNode in currentPathNode.node.connectedLaneNodes) {
+            foreach (LaneNode connectedNode in currentPathNode.laneNode.connectedLaneNodes) {
                 connectedPathNodes.Add(new PathNode(currentPathNode, connectedNode));
             }
 

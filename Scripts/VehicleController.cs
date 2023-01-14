@@ -60,6 +60,7 @@ public class VehicleController : MonoBehaviour {
     private Vision vision;
 
 
+
     void Start() {
         // On start:
 

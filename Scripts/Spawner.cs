@@ -9,8 +9,11 @@ public class Spawner : MonoBehaviour
     [SerializeField] private List<VehicleController> vehicles;
     [SerializeField] private List<LaneNode> targets;
 
+
+
     // stores which vehicle to spawn currently
     private int vehicleNumberToSpawn = 0;
+
 
 
     void Start() {
