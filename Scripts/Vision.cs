@@ -66,4 +66,37 @@ public class Vision : MonoBehaviour {
 
         
     }
+
+    void Update() {
+        /*         
+
+        visionRays.Clear();
+
+        int raysForwards = 4;
+        int raysBackwards = 20;
+
+        for (int i = 0; i < raysForwards; i++)
+        {
+            visionRays.Add(new Ray(transform.position, Quaternion.Euler(0, (float)i, 0) * transform.forward));
+            visionRays.Add(new Ray(transform.position, Quaternion.Euler(0, -(float)i, 0) * transform.forward));
+        }
+
+        for (int i = 0; i < raysBackwards; i++)
+        {
+            visionRays.Add(new Ray(transform.position, Quaternion.Euler(0, (float)i, 0) * -transform.forward));
+            visionRays.Add(new Ray(transform.position, Quaternion.Euler(0, -(float)i, 0) * -transform.forward));
+        }
+
+        visionRays.Add(new Ray(transform.position, transform.forward));
+        visionRays.Add(new Ray(transform.position, -transform.right));
+        visionRays.Add(new Ray(transform.position, transform.right));
+        visionRays.Add(new Ray(transform.position, -transform.forward));
+
+
+        foreach (Ray visionRay in visionRays) { 
+            Debug.DrawRay(transform.position, visionRay.direction * 200, Color.red);
+        }
+        */
+    } 
+    
 }

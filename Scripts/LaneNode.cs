@@ -88,7 +88,9 @@ public class LaneNode : MonoBehaviour {
                     lastGizmoPosition = gizmoPosition;
                 }
 
-            } else {
+            }
+            
+            if (laneTypes[i] != "Curved") {
                 // Remove any handles as they're not neccesary if lanetype is not curved
                 foreach (Transform child in transform) {
                     if (child.gameObject.name == "Handle-" + targetLaneNodeName) {

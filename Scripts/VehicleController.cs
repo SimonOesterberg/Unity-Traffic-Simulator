@@ -33,7 +33,7 @@ public class VehicleController : MonoBehaviour {
     private float minimumDistanceToNextVehicle = 10f;
 
     // Sets how much space there has to be between two vehicles heading towards a lane node for a merge to be allowed without slowing down
-    private float safeMergeDistance = 8.5f;
+    private float safeMergeDistance = 1f;
     
     // The current speed of the vehicle and the speed it aims to have
     private float speed = 0;
@@ -109,11 +109,9 @@ public class VehicleController : MonoBehaviour {
                     // Set this vehicle as a vehicle on the way to the new next node
                     nextNode.vehiclesOnTheirWay.Add(this);
 
-                    // Go to the next step of our path to the end
-                    currentPathStep++;
-
                     // Start travelling
                     StartCoroutine(followRoad(currentNode.laneTypes[i]));
+
                     break;
                 }
             }
@@ -125,15 +123,16 @@ public class VehicleController : MonoBehaviour {
         if (currentNode.vehiclesOn[0] != this) {
             // If this vehicle is not the first one travelling from this lane node:
 
-            // Find the vehicle that is one ahead of this one and set that as the closest vehicle in front
-            for (int j = 0; j < currentNode.vehiclesOn.Count; j++) {
-                if (currentNode.vehiclesOn[j] == this) {
-                    vehicleInFront = currentNode.vehiclesOn[j - 1];
+            // Find the vehicle that is one ahead of this one and that is travelling to the same node as this one and set that as the closest vehicle in front
+            for (int j = 0; j < currentNode.vehiclesOn.Count - 1; j++) {
+                if (currentNode.vehiclesOn[j + 1] == this && currentNode.vehiclesOn[j].nextNode == nextNode) {
+                    vehicleInFront = currentNode.vehiclesOn[j];
+                    break;
                 }
             }
         } else if (nextNode.vehiclesOn.Count > 0) {
             // If no vehicle in front on this node and there are vehicles on the next node:
-
+            
             // Set the closest vehicle in front to be the last one that entered the next node
             vehicleInFront = nextNode.vehiclesOn.Last();
         }
@@ -148,12 +147,14 @@ public class VehicleController : MonoBehaviour {
 
                 VehicleController vehicleOnItsWay = nextNode.vehiclesOnTheirWay[j];
 
-                if (vehicleOnItsWay != this) {
+                if (vehicleOnItsWay != this && vehicleOnItsWay.currentNode != currentNode) {
+                    // If the possible sibling vehicle is not this one and is not travelling from the same node as this one:
+                    
                     if (siblingVehicle == null) {
-                        // The first vehicle that is not this one while siblingVehicle has not been set will become the sibling vehicle
+                        // The first vehicle found while siblingVehicle has not been set will become the sibling vehicle
                         siblingVehicle = vehicleOnItsWay;
-                    } else if (vehicleOnItsWay.leftUntilNextNode < siblingVehicle.leftUntilNextNode) {
-                        // If siblingVehicle has been set and the vehicle in this loop is closer in time to arrive at the next node set it to the siblingVehicle;
+                    } else if (vehicleOnItsWay.leftUntilNextNode < siblingVehicle.leftUntilNextNode && vehicleOnItsWay.currentNode != siblingVehicle.currentNode) {
+                        // If siblingVehicle has been set and the vehicle in this loop is closer in time to arrive at the next node and is coming from another node set it to the siblingVehicle
                         siblingVehicle = vehicleOnItsWay;
                     }
                     
@@ -162,12 +163,16 @@ public class VehicleController : MonoBehaviour {
         }
 
         // Before any of the speeds from the vehicle in front or sibing vehicles has any effect set the base speed to be that of the speed limit
-        targetSpeed = currentNode.speedLimit;
+        if (currentNode.speedLimit > maxSpeed) {
+            targetSpeed = maxSpeed;
+        } else {
+            targetSpeed = currentNode.speedLimit;
+        }
 
         if (vehicleInFront != null || siblingVehicle != null) {
             // If there is a vehicle in front or travelling to the same node as this one:
 
-            if (siblingVehicle != null && vision.isSeeing(siblingVehicle.gameObject.GetComponent<Collider>()) && siblingVehicle.currentNode.priority >= currentNode.priority && Math.Abs(siblingVehicle.leftUntilNextNode - leftUntilNextNode) >= safeMergeDistance) {
+            if (siblingVehicle != null && /* vision.isSeeing(siblingVehicle.gameObject.GetComponent<Collider>()) && */  siblingVehicle.currentNode.priority >= currentNode.priority && Math.Abs(siblingVehicle.leftUntilNextNode - leftUntilNextNode) <= safeMergeDistance) {
                 // If there is a sibling vehicle that this vehicle can see and that is travelling in a way that will result in the merge distance being too small:
 
                 // Set the target speed based on the distance between this vehicles current position and the next nodes position
@@ -179,13 +184,24 @@ public class VehicleController : MonoBehaviour {
                 }
             }
 
-            if (vehicleInFront != null && vision.isSeeing(vehicleInFront.gameObject.GetComponent<Collider>()) && vehicleInFront.speed < speed && Vector3.Distance(transform.position, vehicleInFront.transform.position) < minimumDistanceToNextVehicle && vehicleInFront.speed <= targetSpeed) {
+            if (vehicleInFront != null  && /* vision.isSeeing(vehicleInFront.gameObject.GetComponent<Collider>()) && */ vehicleInFront.speed < speed && Vector3.Distance(transform.position, vehicleInFront.transform.position) < minimumDistanceToNextVehicle && vehicleInFront.speed <= targetSpeed * 0.25) {
                 // If there is a vehicle in front that this vehicle can see, that is travelling slower than this vehicle and that is travelling slower than the target speed possibly set by a sibling vehicle:
 
                 // Set the target speed to the speed of the vehicle in front
-                targetSpeed = vehicleInFront.speed;
-            }
+                targetSpeed = vehicleInFront.speed * 4;
 
+                if (nextNode.connectedLaneNodes.Count > 1) {
+                    foreach (LaneNode alternativeLaneNode in nextNode.connectedLaneNodes) {
+                        if (currentPathStep + 1 < pathToEndNode.Count && alternativeLaneNode.gameObject.name != pathToEndNode[currentPathStep + 1]) {
+                            foreach (LaneNode altenativeLaneNodeConnection in alternativeLaneNode.connectedLaneNodes) {
+                                if (alternativeLaneNode.gameObject.name != pathToEndNode[currentPathStep + 2]) {
+                                    pathToEndNode[currentPathStep + 1] = alternativeLaneNode.gameObject.name;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
         }
 
@@ -196,8 +212,8 @@ public class VehicleController : MonoBehaviour {
     // Function used to change the speed
     private void changeSpeed () {
 
-        if (speed < targetSpeed * 0.25 && speed < maxSpeed * 0.25) {
-            // If currently travelling slower that the target speed and slower that this vehicles maximum speed:
+        if (speed < targetSpeed * 0.25) {
+            // If currently travelling slower that the target speed
 
             // Speed up based on the acceleration of this vehicle
             speed += (2 * acceleration) * Time.deltaTime;
@@ -236,7 +252,7 @@ public class VehicleController : MonoBehaviour {
             for (float t = 0; t <= 1; t += Time.deltaTime * (speed / laneLength)) {
 
                 // Set the leftUntilNextNode varibale to be the lane length divided by the speed
-                leftUntilNextNode = laneLength / speed;
+                leftUntilNextNode = (laneLength * (1 - t)) / speed;
 
                 // Store the position to travel to, make the vehicle face it and move there
                 Vector3 newVehiclePosition = p0 + t * (p1 - p0);
@@ -282,8 +298,8 @@ public class VehicleController : MonoBehaviour {
             // Move from 0% to 100% of the lane. How far to move each frame is based on this vehicles speed and the lanes length so that it won't go faster on shorter road than on longer ones
             for (float t = 0; t <= 1; t += Time.deltaTime * (speed / laneLength)) {
 
-                // Set the leftUntilNextNode varibale to be the lane length divided by the speed
-                leftUntilNextNode = laneLength / speed;
+                // Set the leftUntilNextNode varibale to be whats lef to travel of the lane length divided by the speed
+                leftUntilNextNode = (laneLength * (1 - t)) / speed;
 
                 // Store the position to travel to, make the vehicle face it and move there
                 Vector3 vehiclePosition = p1 + Mathf.Pow(1 - t, 2) * (p0 - p1) + Mathf.Pow(t, 2) * (p2 - p1);
@@ -298,6 +314,9 @@ public class VehicleController : MonoBehaviour {
         // Remove this vehicle from the current nodes vehiclesOn list as we're now done traveling on it and set the current node to the next one
         currentNode.vehiclesOn.Remove(this);
         currentNode = nextNode;
+
+        // Go to the next step of our path to the end
+        currentPathStep++;
 
         // If the vehicle has reached the end node, remove it from the scene, otherwise allow the vehicle to travel to the next node
         if (currentPathStep == pathToEndNode.Count) {
