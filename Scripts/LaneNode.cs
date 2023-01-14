@@ -18,9 +18,13 @@ public class LaneNode : MonoBehaviour {
     public List<LaneNode> connectedLaneNodes = new List<LaneNode>();
     public List<string> laneTypes = new List<string>();
 
+
+
     // List of all vehicles currently travelling to and from this lane node
-    [System.NonSerialized] public List<Vehicle> vehiclesOnTheirWay = new List<Vehicle>();
-    [System.NonSerialized] public List<Vehicle> vehiclesOn = new List<Vehicle>();
+    [System.NonSerialized] public List<VehicleController> vehiclesOnTheirWay = new List<VehicleController>();
+    [System.NonSerialized] public List<VehicleController> vehiclesOn = new List<VehicleController>();
+
+    
 
     // Function that shows how vehicles will travel on the lane by drawing lines
     private void OnDrawGizmos() {

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Spawner : MonoBehaviour
 {
-    [SerializeField] private List<Vehicle> vehicles;
+    [SerializeField] private List<VehicleController> vehicles;
     [SerializeField] private List<LaneNode> targets;
 
     private int vehicleNumberToSpawn = 0;

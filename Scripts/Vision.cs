@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Vision : MonoBehaviour {
-    private Vehicle thisVehicle;
+    private VehicleController thisVehicle;
     private float initialKph;
 
     private List<Collider> collidersInSight = new List<Collider>();
