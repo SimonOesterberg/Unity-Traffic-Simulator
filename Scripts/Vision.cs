@@ -51,10 +51,4 @@ public class Vision : MonoBehaviour {
 
         
     }
-
-    void Update() {
-        /* Debug.DrawRay(transform.position, -transform.forward * visionRange, Color.red);
-        Debug.DrawRay(transform.position, Quaternion.Euler(0, 5.0f, 0) * -transform.forward * visionRange, Color.yellow);
-        Debug.DrawRay(transform.position, Quaternion.Euler(0, -5.0f, 0) * -transform.forward * visionRange, Color.blue); */
-    }
 }

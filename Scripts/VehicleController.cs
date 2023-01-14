@@ -7,15 +7,15 @@ using UnityEngine;
 public class VehicleController : MonoBehaviour {
 
     // Stores where the vehicle should begin and end its journey
-    public LaneNode startNode;
-    public LaneNode endNode;
+    [System.NonSerialized] public LaneNode startNode;
+    [System.NonSerialized] public LaneNode endNode;
 
     // Used to give each vehicle their own maximum speed
-    public float maxSpeed = 50;
+    [SerializeField] private float maxSpeed = 50;
 
     // Sets how quickly a vehicle can accelerate and decelerate
-    public float acceleration = 5;
-    public float deceleration = 5;
+    [SerializeField] private float acceleration = 5;
+    [SerializeField] private float deceleration = 5;
     
 
 
