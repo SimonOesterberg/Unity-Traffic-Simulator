@@ -7,8 +7,8 @@ using UnityEngine;
 public class VehicleController : MonoBehaviour {
 
     // Stores where the vehicle should begin and end its journey
-    [System.NonSerialized] public LaneNode startNode;
-    [System.NonSerialized] public LaneNode endNode;
+    [HideInInspector] public LaneNode startNode;
+    [HideInInspector] public LaneNode endNode;
 
     // Used to give each vehicle their own maximum speed
     [SerializeField] private float maxSpeed = 50;
@@ -275,7 +275,7 @@ public class VehicleController : MonoBehaviour {
                                         Mathf.Pow(1 - t, 2) * (p0 - p1) +
                                         Mathf.Pow(t, 2) * (p2 - p1);
                 
-                Vector3.Distance(lastGizmoPosition, gizmoPosition);
+                laneLength += Vector3.Distance(lastGizmoPosition, gizmoPosition);
                 lastGizmoPosition = gizmoPosition;
             }
 
