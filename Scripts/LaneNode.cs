@@ -54,7 +54,7 @@ public class LaneNode : MonoBehaviour {
                 // If there already exist a handle for this lane node, set the laneHandlePosition to its position
                 foreach (Transform child in transform) {
                     if (child.gameObject.name == "Lane Handle to " + targetLaneNodeName) {
-                        laneHandlePosition = child.transform.position;
+                        laneHandlePosition = child.position;
                         handleExist = true;
                         break;
                     }
