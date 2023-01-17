@@ -13,7 +13,7 @@ public class RoadNode : MonoBehaviour
     public List<RoadNode> connectedRoadNodes = new List<RoadNode>();
 
     void Start() {
-        if (connectedRoadNodes.Count == 0) {
+        /* if (connectedRoadNodes.Count == 0) {
 
             int mostLanes = Math.Max(laneNodesLeft.Count, laneNodesRight.Count);
 
@@ -37,7 +37,7 @@ public class RoadNode : MonoBehaviour
                 rightLaneNodeToConnect.connectedLaneNodes.Add(leftLaneNodeToConnect);
                 rightLaneNodeToConnect.laneTypes.Add("Curved");
             }
-        }
+        } */
     }
 
     void Update()
