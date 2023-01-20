@@ -49,7 +49,7 @@ public class VehicleController : MonoBehaviour {
 
 
     // A list that stores the names of the lanenodes that should be travelled on to reach the endNode the quickest
-    private List<string> pathToEndNode = new List<string>();
+    private List<int> pathToEndNode = new List<int>();
 
     // Stores where in the pathToEndNode list the vehicle should go next
     private int currentPathStep = 1;
@@ -74,6 +74,8 @@ public class VehicleController : MonoBehaviour {
         // Get the path returned from the Pathfinder script
         pathToEndNode = Pathfinder.getPath(startNode, endNode);
 
+        print("1: " + pathToEndNode[1]);
+
         // Set the targetspeed to the current lanes speedlimit and speed up to that speed
         targetSpeed = currentNode.speedLimit;
         changeSpeed();
@@ -95,7 +97,7 @@ public class VehicleController : MonoBehaviour {
 
                 LaneNode connection = currentNode.connectedLaneNodes[i];
 
-                if (connection.gameObject.name == pathToEndNode[currentPathStep]) {
+                if (connection.GetInstanceID() == pathToEndNode[currentPathStep]) {
                     // If any of the lane nodes connected to the currently traveled from node has the name of the next node in our path to the end node:
 
                     // Remove this vehicle from the nextNodes vehicleOnTheirWay list
@@ -192,10 +194,10 @@ public class VehicleController : MonoBehaviour {
 
                 if (nextNode.connectedLaneNodes.Count > 1) {
                     foreach (LaneNode alternativeLaneNode in nextNode.connectedLaneNodes) {
-                        if (currentPathStep + 1 < pathToEndNode.Count && alternativeLaneNode.gameObject.name != pathToEndNode[currentPathStep + 1]) {
+                        if (currentPathStep + 1 < pathToEndNode.Count && alternativeLaneNode.GetInstanceID() != pathToEndNode[currentPathStep + 1]) {
                             foreach (LaneNode altenativeLaneNodeConnection in alternativeLaneNode.connectedLaneNodes) {
-                                if (alternativeLaneNode.gameObject.name != pathToEndNode[currentPathStep + 2]) {
-                                    pathToEndNode[currentPathStep + 1] = alternativeLaneNode.gameObject.name;
+                                if (alternativeLaneNode.GetInstanceID() != pathToEndNode[currentPathStep + 2]) {
+                                    pathToEndNode[currentPathStep + 1] = alternativeLaneNode.GetInstanceID();
                                 }
                             }
                         }
@@ -269,11 +271,11 @@ public class VehicleController : MonoBehaviour {
             // Stores the transform of the lane handle if it finds it as a child of the current node
             Transform laneHandleTF = null;
 
-            foreach (Transform child in currentNode.transform) {
-                if (child.gameObject.name == "Lane Handle to " + nextNode.gameObject.name) {
-                    laneHandleTF = child;
+            for (int i = 0; i < currentNode.connectedLaneNodes.Count; i++) {
+                if (currentNode.connectedLaneNodes[i] == nextNode) {
+                    laneHandleTF = currentNode.laneHandles[i].transform;
                     break;
-                }
+                }  
             }
 
             //Set p0 to the start of the lane, p1 to the handle and p2 to the end

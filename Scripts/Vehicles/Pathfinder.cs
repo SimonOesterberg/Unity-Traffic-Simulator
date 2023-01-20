@@ -20,10 +20,10 @@ public class Pathfinder : MonoBehaviour {
     }
 
     // Function that returns the names of each lane node that should be travelled to reach a vehicles end node
-    public static List<string> getPath(LaneNode startNode, LaneNode endNode) {
+    public static List<int> getPath(LaneNode startNode, LaneNode endNode) {
 
         // The list that should be returned by the function, starts empty
-        List<string> path = new List<string>();
+        List<int> path = new List<int>();
 
         // Create a path node of the start and end lane node
         PathNode pathStartNode = new PathNode(null, startNode);
@@ -54,12 +54,12 @@ public class Pathfinder : MonoBehaviour {
             visitedPathNodes.Add(currentPathNode);
             pathNodesToVisit.Remove(currentPathNode);
 
-            if (currentPathNode.laneNode.gameObject.name == pathEndNode.laneNode.gameObject.name) {
+            if (currentPathNode.laneNode.GetInstanceID() == pathEndNode.laneNode.GetInstanceID()) {
                 // If the current path node has the same name as the end node:
 
                 // Add all path nodes on the way to the end node to the path list
                 while (currentPathNode != null) {
-                    path.Add(currentPathNode.laneNode.gameObject.name);
+                    path.Add(currentPathNode.laneNode.GetInstanceID());
                     currentPathNode = currentPathNode.parent;
                 }
 
