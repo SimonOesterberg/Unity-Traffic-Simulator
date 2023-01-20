@@ -55,6 +55,7 @@ MonoBehaviour:
   - {fileID: 1699228264122756375}
   - {fileID: 1699228263355964186}
   connectedRoadNodes: []
+  roadHandles: []
 --- !u!1001 &5520471600742670975
 PrefabInstance:
   m_ObjectHideFlags: 0

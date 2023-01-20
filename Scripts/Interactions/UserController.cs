@@ -14,16 +14,17 @@ public class UserController : MonoBehaviour {
     private string selectedTool = null;
     private bool interactionsBusy = false;
 
-    private RoadNode roadPreviewNode = null;
+    private GameObject previewNode = null;
     private RoadNode newRoadStart = null;
     private RoadNode newRoadEnd = null;
+    private Handle newRoadHandle = null;
     private bool clickAllowed = true;
 
-    private Transform handleToMoveTF = null;
+    private Transform nodeToMoveTF = null;
 
     [SerializeField] private Material laneMaterial;
 
-    [SerializeField] private GameObject roadHandlePrefab;
+    [SerializeField] private Handle roadHandlePrefab;
 
     private float amountOfPointsAlongCurve = 20;
 
@@ -42,7 +43,15 @@ public class UserController : MonoBehaviour {
                 if (Physics.Raycast(ray, out hit)) {
                     if (selectedTool == "Create Road") {
                         newRoadStart = Instantiate(roadNode, hit.point, Quaternion.identity);
-                        roadPreviewNode = Instantiate(roadNode, hit.point, Quaternion.identity);
+                        
+                        if (newRoadLanesType == "Straight") {
+                            RoadNode endPreview = Instantiate(roadNode, hit.point, Quaternion.identity);
+                            previewNode = endPreview.gameObject;
+                        } else if (newRoadLanesType == "Curved") {
+                            Handle handlePreview = Instantiate(roadHandlePrefab, hit.point, Quaternion.identity);
+                            previewNode = handlePreview.gameObject;
+                        }
+                        
 
                         clickAllowed = false;
                         interactionsBusy = true;
@@ -56,30 +65,30 @@ public class UserController : MonoBehaviour {
 
                 if (Physics.Raycast(ray, out hit)) {
                     
-                    roadPreviewNode.transform.position = hit.point;
+                    previewNode.transform.position = hit.point;
 
                     
                     newRoadStart.transform.LookAt(hit.point);
-                    roadPreviewNode.transform.rotation = newRoadStart.transform.rotation;
+                    previewNode.transform.rotation = newRoadStart.transform.rotation;
 
                     if (Input.GetMouseButtonDown(0) && clickAllowed && !EventSystem.current.IsPointerOverGameObject()) {
                         clickAllowed = false;
 
-                        Destroy(roadPreviewNode.gameObject);
-                        newRoadEnd = Instantiate(roadNode, hit.point, roadPreviewNode.transform.rotation);
+                        Destroy(previewNode.gameObject);
+                        newRoadEnd = Instantiate(roadNode, hit.point, previewNode.transform.rotation);
                         newRoadStart.connectedRoadNodes.Add(newRoadEnd);
 
                         if (newRoadLanesType == "Curved") {
 
                             Vector3 roadHandlePosition = Vector3.Lerp(newRoadStart.transform.position, newRoadEnd.transform.position, 0.5f);
 
-                            GameObject newRoadHandleGO = Instantiate(roadHandlePrefab, roadHandlePosition, Quaternion.identity, newRoadStart.transform);
-                            newRoadHandleGO.transform.LookAt(newRoadEnd.transform.position);
+                            newRoadHandle = Instantiate(roadHandlePrefab, roadHandlePosition, Quaternion.identity, newRoadStart.transform);
+                            newRoadHandle.transform.LookAt(newRoadEnd.transform.position);
 
-                            newRoadStart.roadHandles.Add(newRoadHandleGO);
+                            newRoadStart.roadHandles.Add(newRoadHandle.gameObject);
                             
 
-                            handleToMoveTF = newRoadHandleGO.transform;
+                            nodeToMoveTF = newRoadEnd.transform;
                         }
 
                         drawRoad(newRoadStart, newRoadEnd);
@@ -87,11 +96,11 @@ public class UserController : MonoBehaviour {
                         if (newRoadLanesType == "Straight") {
                             interactionsBusy = false;
                         } else if (newRoadLanesType == "Curved") {
-                            selectedTool = "Move handle";
+                            selectedTool = "Move Node";
                         }
                     }
                 }
-            } else if (selectedTool == "Move handle") {
+            } else if (selectedTool == "Move Node") {
 
                 Ray ray = GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
@@ -100,19 +109,19 @@ public class UserController : MonoBehaviour {
 
                 if (Physics.Raycast(ray, out hit)) {
                     
-                    handleToMoveTF.position = hit.point;
+                    nodeToMoveTF.position = hit.point;
 
-                    newRoadStart.transform.LookAt(handleToMoveTF);
-                    newRoadEnd.transform.LookAt(newRoadEnd.transform.position - (handleToMoveTF.position - newRoadEnd.transform.position));
+                    newRoadStart.transform.LookAt(newRoadHandle.transform);
+                    newRoadEnd.transform.LookAt(newRoadEnd.transform.position - (newRoadHandle.transform.position - newRoadEnd.transform.position));
                    
 
-                    handleToMoveTF.transform.rotation = Quaternion.Lerp(newRoadStart.transform.rotation, newRoadEnd.transform.rotation, 0.5f);
+                    newRoadHandle.transform.rotation = Quaternion.Lerp(newRoadStart.transform.rotation, newRoadEnd.transform.rotation, 0.5f);
 
-                    float distanceFromCenter = Vector3.Distance(handleToMoveTF.position, roadCenter);
+                    float handlesDistanceFromCenter = Vector3.Distance(newRoadHandle.transform.position, roadCenter);
 
-                    float newScale = 1 + distanceFromCenter * 0.005f; 
+                    float newScale = 1 + handlesDistanceFromCenter * 0.005f; 
 
-                    handleToMoveTF.transform.localScale = new Vector3(newScale, newScale, newScale);
+                    newRoadHandle.transform.localScale = new Vector3(newScale, newScale, newScale);
 
                     foreach (Transform laneNodeTF in newRoadStart.transform) {
                         if ((laneNodeTF.gameObject.GetComponent(typeof(LaneNode)) as LaneNode) != null) {
