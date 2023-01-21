@@ -40,20 +40,27 @@ public class UserController : MonoBehaviour {
                 Ray ray = GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
 
-                if (Physics.Raycast(ray, out hit)) {
+                if (Physics.Raycast(ray, out hit) && hit.collider) {
                     if (selectedTool == "Create Road") {
-                        newRoadStart = Instantiate(roadNode, hit.point, Quaternion.identity);
-                        
+                        if (hit.collider.tag == "Road") {
+                            newRoadStart = hit.collider.gameObject.GetComponent(typeof(RoadNode)) as RoadNode;
+                        } else if (hit.collider.tag == "Terrain") {
+                            newRoadStart = Instantiate(roadNode, hit.point, Quaternion.identity);
+                            newRoadStart.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+                        }
+
                         if (newRoadLanesType == "Straight") {
                             RoadNode endPreview = Instantiate(roadNode, hit.point, Quaternion.identity);
+                            endPreview.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
                             previewNode = endPreview.gameObject;
                         } else if (newRoadLanesType == "Curved") {
+                            
                             Handle handlePreview = Instantiate(roadHandlePrefab, hit.point, Quaternion.identity);
+                            handlePreview.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
                             previewNode = handlePreview.gameObject;
                         }
-                        
 
-                        clickAllowed = false;
+                        newRoadStart.gameObject.layer = 0;
                         interactionsBusy = true;
                     }
                 }
@@ -102,6 +109,8 @@ public class UserController : MonoBehaviour {
                 }
             } else if (selectedTool == "Move Node") {
 
+                nodeToMoveTF.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+
                 Ray ray = GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
 
@@ -146,6 +155,8 @@ public class UserController : MonoBehaviour {
                     }
 
                     if (Input.GetMouseButtonDown(0) && clickAllowed && !EventSystem.current.IsPointerOverGameObject()) {
+                        nodeToMoveTF.gameObject.layer = 0;
+
                         clickAllowed = false;
                         interactionsBusy = false;
                         selectedTool = "Create Road";
