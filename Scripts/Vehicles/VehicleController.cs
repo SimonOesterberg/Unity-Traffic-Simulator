@@ -112,7 +112,7 @@ public class VehicleController : MonoBehaviour {
                     nextNode.vehiclesOnTheirWay.Add(this);
 
                     // Start travelling
-                    StartCoroutine(followRoad(currentNode.laneTypes[i]));
+                    StartCoroutine(followRoad());
 
                     break;
                 }
@@ -234,7 +234,7 @@ public class VehicleController : MonoBehaviour {
 
 
     // Enumerator that makes the car move
-    private IEnumerator followRoad(string laneType) {
+    private IEnumerator followRoad() {
 
         // Make it so that the vehicle cannot travel to the next node on the path before traveling this one
         coroutineAllowed = false;
@@ -242,75 +242,51 @@ public class VehicleController : MonoBehaviour {
         // Stores this lanes length
         float laneLength = 0;
 
-        if (laneType == "Straight") {
-            // If the lane this vehicle is traveling is straight:
+        // If the lane this vehicle is traveling is curved:
 
-            // Set p0 to the start of the lane and p1 to the end and set lane length to the distance between those two points
-            Vector3 p0 = currentNode.transform.position;
-            Vector3 p1 =  nextNode.transform.position;
-            laneLength = Vector3.Distance(p0, p1);
+        // Stores the transform of the lane handle if it finds it as a child of the current node
+        Transform laneHandleTF = null;
 
-            // Move from 0% to 100% of the lane. How far to move each frame is based on this vehicles speed and the lanes length so that it won't go faster on shorter road than on longer ones
-            for (float t = 0; t <= 1; t += Time.deltaTime * (speed / laneLength)) {
+        for (int i = 0; i < currentNode.connectedLaneNodes.Count; i++) {
+            if (currentNode.connectedLaneNodes[i] == nextNode) {
+                laneHandleTF = currentNode.laneHandles[i].transform;
+                break;
+            }  
+        }
 
-                // Set the leftUntilNextNode varibale to be the lane length divided by the speed
-                leftUntilNextNode = (laneLength * (1 - t)) / speed;
+        //Set p0 to the start of the lane, p1 to the handle and p2 to the end
+        Vector3 p0 = currentNode.transform.position;
+        Vector3 p1 = laneHandleTF.position;
+        Vector3 p2 = nextNode.transform.position;
 
-                // Store the position to travel to, make the vehicle face it and move there
-                Vector3 newVehiclePosition = p0 + t * (p1 - p0);
-                transform.LookAt(newVehiclePosition);
-                transform.position = newVehiclePosition;
+        // Stores the position of the previous gizmo along the curve
+        Vector3 lastGizmoPosition = p0;
+            
+        // Calculate distances between points along the curved path between p0 and p2 and add them to the laneLength
+        for (float t = 0.05f; t <= 1.05f; t += 0.05f) {
 
-                // Continue the loop on the next frame
-                yield return new WaitForEndOfFrame();
-            }
+            Vector3 gizmoPosition = p1 + 
+                                    Mathf.Pow(1 - t, 2) * (p0 - p1) +
+                                    Mathf.Pow(t, 2) * (p2 - p1);
+            
+            laneLength += Vector3.Distance(lastGizmoPosition, gizmoPosition);
+            lastGizmoPosition = gizmoPosition;
+        }
 
-        } else if (laneType  == "Curved") {
-            // If the lane this vehicle is traveling is curved:
+        // Move from 0% to 100% of the lane. How far to move each frame is based on this vehicles speed and the lanes length so that it won't go faster on shorter road than on longer ones
+        for (float t = 0; t <= 1; t += Time.deltaTime * (speed / laneLength)) {
 
-            // Stores the transform of the lane handle if it finds it as a child of the current node
-            Transform laneHandleTF = null;
+            // Set the leftUntilNextNode varibale to be whats lef to travel of the lane length divided by the speed
+            leftUntilNextNode = (laneLength * (1 - t)) / speed;
 
-            for (int i = 0; i < currentNode.connectedLaneNodes.Count; i++) {
-                if (currentNode.connectedLaneNodes[i] == nextNode) {
-                    laneHandleTF = currentNode.laneHandles[i].transform;
-                    break;
-                }  
-            }
+            // Store the position to travel to, make the vehicle face it and move there
+            Vector3 vehiclePosition = p1 + Mathf.Pow(1 - t, 2) * (p0 - p1) + Mathf.Pow(t, 2) * (p2 - p1);
+            transform.LookAt(vehiclePosition);
+            transform.position = vehiclePosition;
 
-            //Set p0 to the start of the lane, p1 to the handle and p2 to the end
-            Vector3 p0 = currentNode.transform.position;
-            Vector3 p1 = laneHandleTF.position;
-            Vector3 p2 = nextNode.transform.position;
-
-            // Stores the position of the previous gizmo along the curve
-            Vector3 lastGizmoPosition = p0;
-                
-            // Calculate distances between points along the curved path between p0 and p2 and add them to the laneLength
-            for (float t = 0.05f; t <= 1.05f; t += 0.05f) {
-
-                Vector3 gizmoPosition = p1 + 
-                                        Mathf.Pow(1 - t, 2) * (p0 - p1) +
-                                        Mathf.Pow(t, 2) * (p2 - p1);
-                
-                laneLength += Vector3.Distance(lastGizmoPosition, gizmoPosition);
-                lastGizmoPosition = gizmoPosition;
-            }
-
-            // Move from 0% to 100% of the lane. How far to move each frame is based on this vehicles speed and the lanes length so that it won't go faster on shorter road than on longer ones
-            for (float t = 0; t <= 1; t += Time.deltaTime * (speed / laneLength)) {
-
-                // Set the leftUntilNextNode varibale to be whats lef to travel of the lane length divided by the speed
-                leftUntilNextNode = (laneLength * (1 - t)) / speed;
-
-                // Store the position to travel to, make the vehicle face it and move there
-                Vector3 vehiclePosition = p1 + Mathf.Pow(1 - t, 2) * (p0 - p1) + Mathf.Pow(t, 2) * (p2 - p1);
-                transform.LookAt(vehiclePosition);
-                transform.position = vehiclePosition;
-
-                // Continue the loop on the next frame
-                yield return new WaitForEndOfFrame();
-            }
+            // Continue the loop on the next frame
+            yield return new WaitForEndOfFrame();
+        
         }
 
         // Remove this vehicle from the current nodes vehiclesOn list as we're now done traveling on it and set the current node to the next one
